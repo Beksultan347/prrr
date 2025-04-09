@@ -3,6 +3,7 @@ import About from './components/About.jsx';
 import Navbar from './components/Navbar.jsx'
 import Projects from './components/Projects.jsx' // импорт Projects
 import React, { useState } from 'react';
+import './index.css';
 
 const App = () => {
   const [activeCategory, setActiveCategory] = useState('Все'); // Стейт для активной категории
