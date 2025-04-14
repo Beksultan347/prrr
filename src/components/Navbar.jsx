@@ -34,7 +34,7 @@ const Navbar = ({ setActiveCategory, activeCategory }) => {
   return (
     <div className={`bg-gray-800 p-4 ${isScrolled ? 'fixed top-0 left-0 right-0 z-50 shadow-md' : ''}`}>
       <div 
-        className={`flex gap-2 sm:gap-1 items-center overflow-x-auto ${isScrolled ? 'flex-nowrap' : 'flex-wrap'}`}
+        className={`flex gap-2 sm:gap-1 pb-2 items-center overflow-x-auto ${isScrolled ? 'flex-nowrap' : 'flex-wrap'}`}
         style={{ whiteSpace: 'nowrap' }} // чтобы текст не переносился на мобильных
       >
         {categories.map((category) => (
@@ -49,8 +49,6 @@ const Navbar = ({ setActiveCategory, activeCategory }) => {
             >
               {category}
             </p>
-
-            
           </div>
         ))}
       </div>

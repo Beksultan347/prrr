@@ -1,22 +1,17 @@
 
-
-
-
 import React, { useState, useEffect } from 'react';
-import productsData from '../data/productsData'; // Импортируем данные о товарах
+import productsData from '../data/productsData';
 
 const Projects = ({ activeCategory }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
-  const [orderSuccess, setOrderSuccess] = useState(false); // Стейт для успешного заказа
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
-    // Попробуем получить номер телефона из localStorage, если он есть
     const savedPhoneNumber = localStorage.getItem('phoneNumber');
-    if (savedPhoneNumber) {
-      setPhoneNumber(savedPhoneNumber);
-    }
+    if (savedPhoneNumber) setPhoneNumber(savedPhoneNumber);
   }, []);
 
   const handleCloseModal = (e) => {
@@ -40,60 +35,55 @@ const Projects = ({ activeCategory }) => {
     sendTelegramMessage(phoneNumber, selectedProduct.id);
 
     setOrderSuccess(true);
-    setTimeout(() => {
-      setOrderSuccess(false);
-    }, 5000);
+    setTimeout(() => setOrderSuccess(false), 3000);
   };
 
   const sendTelegramMessage = (phone, productId) => {
     const telegramToken = '8142625929:AAFLEKKUiKM2jvW5IoW49peFrEWkjtgQOY8';
-    const chatId = '6441055549'; // Замените на ваш chat_id
-    
+    const chatId = '6441055549';
     const message = `Новый заказ!\nТелефон: ${phone}\nТовар ID: ${productId}`;
-    
+
     fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: message }),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Message sent', data);
-      })
-      .catch((error) => {
-        console.error('Error sending message to Telegram:', error);
-      });
+      .then((res) => res.json())
+      .then((data) => console.log('Message sent', data))
+      .catch((err) => console.error('Telegram error:', err));
   };
 
-  // Фильтрация товаров по категории
-  const filteredProducts = activeCategory === 'Все'
-    ? productsData
-    : productsData.filter(product => product.category === activeCategory);
+  const filteredProducts =
+    activeCategory === 'Все'
+      ? productsData
+      : productsData.filter((product) => product.category === activeCategory);
 
   return (
     <div className="p-6 bg-[#d6cef2] min-h-screen">
-
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredProducts.map((product) => (
           <div
             key={product.id}
-            onClick={() => setSelectedProduct(product)}
-            className="cursor-pointer bg-white border border-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-4 flex flex-col"
+            onClick={() => {
+              setSelectedProduct(product);
+              setCurrentImageIndex(0);
+            }}
+            className="cursor-pointer bg-white border rounded-2xl shadow-md hover:shadow-xl transition-all p-2 flex flex-col"
           >
             <img
-              src={product.image}
+              src={product.images[0]}
               alt={product.title}
-              className="w-full h-auto object-contain mb-1 rounded-xl" // Уменьшена высота изображения
+              className="w-full h-auto object-contain mb-1 rounded-xl"
             />
-            <h3 className="text-base py-2 font-semibold text-gray-800">{product.title}</h3>
-            
+            <h3 className="text-base font-semibold text-gray-800">{product.title}</h3>
+            <p className="text-sm text-gray-700 mb-1">Цена: {product.price} сом</p>
+
             <button
-              onClick={handleOrderClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedProduct(product);
+                setIsPhoneModalOpen(true);
+              }}
               className="mt-auto bg-blue-600 text-white text-sm px-3 py-1 rounded-full hover:bg-blue-700 transition"
             >
               Заказать
@@ -102,35 +92,66 @@ const Projects = ({ activeCategory }) => {
         ))}
       </div>
 
-     
+    
       {selectedProduct && (
         <div
           className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center px-4"
           onClick={handleCloseModal}
         >
           <div
-            className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 relative"
+            className="bg-white rounded-xl shadow-lg max-w-4xl w-full p-4 flex flex-col md:flex-row gap-6 relative"
             onClick={(e) => e.stopPropagation()}
           >
+            
             <button
-              className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-3xl"
+              className="absolute top-4 right-6 text-gray-800 hover:text-red-600 text-5xl font-bold z-50"
               onClick={() => setSelectedProduct(null)}
+              aria-label="Закрыть"
             >
               &times;
             </button>
-            <img
-              src={selectedProduct.image}
-              alt={selectedProduct.title}
-              className="w-full h-56 object-contain mb-4 rounded-lg"
-            />
-            <h3 className="text-xl font-semibold mb-2">{selectedProduct.title}</h3>
-            <p className="text-gray-700 text-sm mb-4">{selectedProduct.description}</p>
-            <button
-              onClick={handleOrderClick}
-              className="w-full bg-blue-600 text-white text-sm px-4 py-2 rounded-full hover:bg-blue-700 transition"
-            >
-              Заказать
-            </button>
+
+        
+            <div className="w-full md:w-1/2 relative flex items-center justify-center">
+              <img
+                src={selectedProduct.images[currentImageIndex]}
+                alt={selectedProduct.title}
+                className="w-full h-auto object-contain rounded-lg"
+              />
+              {currentImageIndex > 0 && (
+                <button
+                  onClick={() => setCurrentImageIndex((i) => i - 1)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-5xl px-2 pb-2  rounded-full z-40"
+                >
+                  ‹
+                </button>
+              )}
+              {currentImageIndex < selectedProduct.images.length - 1 && (
+                <button
+                  onClick={() => setCurrentImageIndex((i) => i + 1)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-5xl px-2 pb-2 rounded-full z-40"
+                >
+                  ›
+                </button>
+              )}
+            </div>
+
+           
+            <div className="w-full md:w-1/2 flex flex-col justify-between">
+              <div>
+                <h3 className="text-2xl font-bold mb-1">{selectedProduct.title}</h3>
+                <p className="text-gray-700 mb-2 text-sm">{selectedProduct.description}</p>
+                <p className="text-lg font-semibold text-gray-900 mb-4">
+                  Цена: {selectedProduct.price} сом
+                </p>
+              </div>
+              <button
+                onClick={handleOrderClick}
+                className="bg-blue-600 text-white text-sm px-4 py-2 rounded-full hover:bg-blue-700 transition w-full"
+              >
+                Заказать
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -141,10 +162,7 @@ const Projects = ({ activeCategory }) => {
           className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center px-4"
           onClick={(e) => e.target === e.currentTarget && setIsPhoneModalOpen(false)}
         >
-          <div
-            className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 relative">
             <h3 className="text-xl font-semibold mb-4">Введите ваш номер телефона</h3>
             <form onSubmit={handlePhoneNumberSubmit}>
               <input
@@ -166,28 +184,14 @@ const Projects = ({ activeCategory }) => {
         </div>
       )}
 
-
-{orderSuccess && (
-  <div className="fixed top-0 left-0 right-0 p-4 bg-green-600 text-white text-center">
-    <p>Ваш заказ успешно оформлен! Наши менеджеры свяжутся с вами.</p>
-  </div>
-)}
-
-{orderSuccess && (
-  setTimeout(() => {
-    setOrderSuccess(false);  // Скрываем уведомление
-  }, 1500)  // Уменьшили задержку на 2 секунды
-)}
-
+    
+      {orderSuccess && (
+        <div className="fixed w-full top-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-[9999] text-center">
+          Ваш заказ успешно оформлен! Наши менеджеры свяжутся с вами.
+        </div>
+      )}
     </div>
   );
 };
 
 export default Projects;
-
-
-
-
-
-
-
