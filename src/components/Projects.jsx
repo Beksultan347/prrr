@@ -75,7 +75,7 @@ const Projects = ({ activeCategory }) => {
               alt={product.title}
               className="w-full h-auto object-contain mb-1 rounded-xl"
             />
-            <h3 className="text-base font-semibold text-gray-800">{product.title}</h3>
+            <h3 className="text-base font-semibold text-gray-80">{product.title}</h3>
             <p className="text-sm text-gray-700 mb-1">Цена: {product.price} сом</p>
 
             <button
@@ -116,12 +116,26 @@ const Projects = ({ activeCategory }) => {
               <img
                 src={selectedProduct.images[currentImageIndex]}
                 alt={selectedProduct.title}
-                className="w-full h-auto object-contain rounded-lg"
+                className="w-full h-auto max-h-[400px] object-contain rounded-lg"
               />
+              <div className="flex flex-col mt-4 gap-2 overflow-x-auto">
+  {selectedProduct.images.map((img, index) => (
+    <img
+      key={index}
+      src={img}
+      alt={`Миниатюра ${index + 1}`}
+      onClick={() => setCurrentImageIndex(index)}
+      className={`w-16 h-16 object-cover rounded-lg cursor-pointer border-2 ${
+        index === currentImageIndex ? 'border-blue-600' : 'border-transparent'
+      }`}
+    />
+  ))}
+</div>
+
               {currentImageIndex > 0 && (
                 <button
                   onClick={() => setCurrentImageIndex((i) => i - 1)}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-5xl px-2 pb-2  rounded-full z-40"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-5xl px-1 pb-2  rounded-full z-40"
                 >
                   ‹
                 </button>
@@ -129,7 +143,7 @@ const Projects = ({ activeCategory }) => {
               {currentImageIndex < selectedProduct.images.length - 1 && (
                 <button
                   onClick={() => setCurrentImageIndex((i) => i + 1)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-5xl px-2 pb-2 rounded-full z-40"
+                  className="absolute right-16 top-1/2 -translate-y-1/2 bg-gray-300 hover:bg-gray-400 text-gray-800 text-5xl px-1 pb-2 rounded-full z-40"
                 >
                   ›
                 </button>
@@ -139,7 +153,7 @@ const Projects = ({ activeCategory }) => {
            
             <div className="w-full md:w-1/2 flex flex-col justify-between">
               <div>
-                <h3 className="text-2xl font-bold mb-1">{selectedProduct.title}</h3>
+                <h3 className="text-2xl font-bold ">{selectedProduct.title}</h3>
                 <p className="text-gray-700 mb-2 text-sm">{selectedProduct.description}</p>
                 <p className="text-lg font-semibold text-gray-900 mb-4">
                   Цена: {selectedProduct.price} сом
